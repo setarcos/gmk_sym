@@ -475,15 +475,26 @@ int make_pin(int fldcnt, char *pFields[])
 	char pin[40];
 	int pin_pos;
 	char *type;
+	static char oldpin[40];
+	static int oldpos;
+	static int oldside;
+	static int oldshape;
 
 	if (fldcnt < 5) {
-		fprintf(stderr, "\nError, not enough parameters on input line:%i instead of 5 !\n", fldcnt);
-		fprintf(stderr, "\nPlease fix the input file then try again.\n\n");
-		return -1;
+//      fprintf (stderr,"\nError, not enough parameters on input line:%i instead of 5 !\n",fldcnt);
+//      fprintf (stderr,"\nPlease fix the input file then try again.\n\n");
+//      return -1;
 	}
 
 	strcpy(pin_name, pFields[0]);
-	strcpy(pin, pFields[1]);	/* get pin number */
+	if (pFields[1]) {
+		strcpy(pin, pFields[1]);	/* get pin number */
+		strcpy(oldpin, pFields[1]);
+	} else {
+		i = atoi(oldpin);
+		sprintf(pin, "%d", i + 1);
+		sprintf(oldpin, "%d", i + 1);
+	}
 
 	for (i = 0; i < pin_counter; i++)
 		if (!strcmp(pin, pin_used[i])) {
@@ -492,25 +503,36 @@ int make_pin(int fldcnt, char *pFields[])
 		}
 	strncpy(pin_used[pin_counter++], pin, 5);	/* save the current pin, the first 5 char */
 
-	shape = LINE_SHAPE;
-	if (!strcasecmp(pFields[2], "dot"))	/* get shape */
-		shape = DOT_SHAPE;
-	if (!strcasecmp(pFields[2], "clock"))	/* get shape */
-		shape = CLOCK_SHAPE;
-	if (!strcasecmp(pFields[3], "L"))
-		side = L_SIDE;
-	else if (!strcasecmp(pFields[3], "R"))
-		side = R_SIDE;
-	else if (!strcasecmp(pFields[3], "B"))
-		side = B_SIDE;
-	else if (!strcasecmp(pFields[3], "T"))
-		side = T_SIDE;
-	else {
-		fprintf(stderr, "\nError, %s not a valid position, should be l,t,b or r.\n", pFields[3]);
-		return -1;
-	}
-
-	pin_pos = atoi(pFields[4]);
+	if (pFields[2]) {
+		shape = LINE_SHAPE;
+		if (!strcasecmp(pFields[2], "dot"))	/* get shape */
+			shape = DOT_SHAPE;
+		if (!strcasecmp(pFields[2], "clock"))	/* get shape */
+			shape = CLOCK_SHAPE;
+		oldshape = shape;
+	} else
+		shape = oldshape;
+	if (pFields[3]) {
+		if (!strcasecmp(pFields[3], "L"))
+			side = L_SIDE;
+		else if (!strcasecmp(pFields[3], "R"))
+			side = R_SIDE;
+		else if (!strcasecmp(pFields[3], "B"))
+			side = B_SIDE;
+		else if (!strcasecmp(pFields[3], "T"))
+			side = T_SIDE;
+		else {
+			fprintf(stderr, "\nError, %s not a valid position, should be l,t,b or r.\n", pFields[3]);
+			return -1;
+		}
+		oldside = side;
+	} else
+		side = oldside;
+	if (pFields[4]) {
+		pin_pos = atoi(pFields[4]);
+		oldpos = pin_pos;
+	} else
+		pin_pos = ++oldpos;
 
 	type = NULL;
 	if (pFields[5]) {
