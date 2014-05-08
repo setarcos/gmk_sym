@@ -148,6 +148,7 @@ int net_pin = 0;
 
 char pin_used[300][5];		/* keep track of pin number used. Assume 300 pins max */
 int pin_counter = 0;
+int ccwise = 0;
 
 /***************************************************/
 /***************************************************/
@@ -159,15 +160,18 @@ int main(int argc, char **argv)
 	char *pFields[MAX_FIELDS];
 	int line_nub = 0;
 
-	while ((c = getopt(argc, argv, "?hd:")) != EOF) {
+	while ((c = getopt(argc, argv, "?hdc")) != EOF) {
 		switch (c) {
 		case 'd':
 			Debug = 1;
 			break;
 		case '?':
 		case 'h':
-			fprintf(stderr, "usage: %s -dh?\n", argv[0]);
+			fprintf(stderr, "usage: %s -dhc?\n", argv[0]);
 			exit(0);
+			break;
+		case 'c':
+			ccwise = 1;
 			break;
 		}
 	}
@@ -177,7 +181,7 @@ int main(int argc, char **argv)
 
 	stream = stdin;
 	if (argc > 1) {
-		if ((stream = fopen(argv[1], "r")) == NULL) {
+		if ((stream = fopen(argv[optind], "r")) == NULL) {
 			fprintf(stderr, "Cannot open file: %s\n", argv[1]);
 			exit(-1);
 		}
@@ -566,7 +570,10 @@ int make_pin(int fldcnt, char *pFields[])
 		pos_x = pin_spacing;
 	}
 	if (side == R_SIDE) {
-		pos_y = pin_0_y - (pin_spacing * pin_pos);
+		if (ccwise)
+			pos_y = pin_0_y - BoxHeight + (pin_spacing * pin_pos);
+		else
+			pos_y = pin_0_y - (pin_spacing * pin_pos);
 		pos_x = pin_spacing + BoxWidth;
 	}
 	if (side == B_SIDE) {
@@ -574,7 +581,10 @@ int make_pin(int fldcnt, char *pFields[])
 		pos_y = pin_spacing;
 	}
 	if (side == T_SIDE) {
-		pos_x = pin_0_x + (pin_spacing * pin_pos);
+		if (ccwise)
+			pos_x = pin_0_x + BoxWidth - (pin_spacing * pin_pos);
+		else
+			pos_x = pin_0_x + (pin_spacing * pin_pos);
 		pos_y = pin_0_y;
 	}
 	pin_add(pos_x, pos_y, pin, shape, side, pin_name, type);
