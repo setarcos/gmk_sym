@@ -156,14 +156,14 @@ int main(int argc, char **argv)
 {
 	FILE *stream;
 	char LineBuf[256];
-	int fldcnt, i, c, Debug = 0;
+	int fldcnt, i, c;
 	char *pFields[MAX_FIELDS];
 	int line_nub = 0;
 
 	while ((c = getopt(argc, argv, "?hdc")) != EOF) {
 		switch (c) {
 		case 'd':
-			Debug = 1;
+		//	Debug = 1;
 			break;
 		case '?':
 		case 'h':
