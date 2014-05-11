@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 	}
 	line_nub = -1;
 
-	printf("v 20030525\n");	/* The v character is the version of the file */
+	printf("v 20130925 2\n");	/* The v character is the version of the file */
 
 	while (fgets(LineBuf, sizeof (LineBuf) - 1, stream) != NULL) {
 		if (line_chk(LineBuf) < 0)
@@ -253,8 +253,11 @@ void cross(int pos_x, int pos_y, int color)
 /***************************************************/
 void pin_add(int pos_x, int pos_y, char *pin, int shape, int dir, char *name, char *type)
 {
-	int x, y;
 	int xdir = 0, ydir = 0, font_size = 8;
+	const int x_sign[] = {-1, 1, -1, -1};
+	const int y_sign[] = {1, 1, -1, 1};
+	const int angle[] = {0, 0, 1, 1};
+	const int align[] = {1, 0, 1, 0};
 
 	switch (dir) {
 	case L_SIDE:
@@ -289,77 +292,23 @@ void pin_add(int pos_x, int pos_y, char *pin, int shape, int dir, char *name, ch
 		printf("P %d %d %d %d %d 0 1\n", pos_x, pos_y, pos_x - pin_len * xdir, pos_y - pin_len * ydir, WHITE);
 		printf("{\n");
 	}
-	x = pos_x;
-	y = pos_y;
 
 	/* pin_xy(dir,pin,font_size,&x,&y); */
 	/* output pinseq */
-	switch (dir) {
-	case L_SIDE:
-		printf("T %d %d %d %d 0 1 0 6\n", x - 50, y + 50, YELLOW, font_size);
-		break;
-	case R_SIDE:
-		printf("T %d %d %d %d 0 1 0 0\n", x + 50, y + 50, YELLOW, font_size);
-		break;
-	case B_SIDE:
-		printf("T %d %d %d %d 0 1 90 6\n", x - 50, y - 50, YELLOW, font_size);
-		break;
-	case T_SIDE:
-		printf("T %d %d %d %d 0 1 90 0\n", x - 50, y + 50, YELLOW, font_size);
-		break;
-	}
+	printf("T %d %d %d %d 0 1 %d %d 1\n", pos_x + x_sign[dir] * 50, pos_y + y_sign[dir] * 50, YELLOW, font_size, angle[dir] * 90, align[dir] * 6);
 	printf("pinseq=%d\n", ++net_pin);
 
 	/* output pinnumber */
-	switch (dir) {
-	case L_SIDE:
-		printf("T %d %d %d %d 1 1 0 6\n", x - 50, y + 50, YELLOW, font_size);
-		break;
-	case R_SIDE:
-		printf("T %d %d %d %d 1 1 0 0\n", x + 50, y + 50, YELLOW, font_size);
-		break;
-	case B_SIDE:
-		printf("T %d %d %d %d 1 1 90 6\n", x - 50, y - 50, YELLOW, font_size);
-		break;
-	case T_SIDE:
-		printf("T %d %d %d %d 1 1 90 0\n", x - 50, y + 50, YELLOW, font_size);
-		break;
-	}
+	printf("T %d %d %d %d 1 1 %d %d 1\n", pos_x + x_sign[dir] * 50, pos_y + y_sign[dir] * 50, YELLOW, font_size, angle[dir] * 90, align[dir] * 6);
 	printf("pinnumber=%s\n", pin);
 
 	if (type) {
-		switch (dir) {
-		case L_SIDE:
-			printf("T %d %d %d %d 0 0 0 7\n", pos_x - 400, pos_y, YELLOW, font_size);
-			break;
-		case R_SIDE:
-			printf("T %d %d %d %d 0 0 0 1\n", pos_x + 400, pos_y, YELLOW, font_size);
-			break;
-		case B_SIDE:
-			printf("T %d %d %d %d 0 0 90 7\n", pos_x, pos_y - 400, YELLOW, font_size);
-			break;
-		case T_SIDE:
-			printf("T %d %d %d %d 0 0 90 1\n", pos_x, pos_y + 400, YELLOW, font_size);
-			break;
-		}
+		printf("T %d %d %d %d 0 0 %d %d 1\n", pos_x - xdir * 400, pos_y - ydir * 400, YELLOW, font_size, angle[dir] * 90, align[dir] * 6 + 1);
 		printf("pintype=%s\n", type);
 	}
 
 	if (strlen(name)) {
-		switch (dir) {
-		case L_SIDE:
-			printf("T %d %d %d %d 1 1 0 1\n", pos_x + 100, pos_y, GREEN, font_size);
-			break;
-		case R_SIDE:
-			printf("T %d %d %d %d 1 1 0 7\n", pos_x - 100, pos_y, GREEN, font_size);
-			break;
-		case B_SIDE:
-			printf("T %d %d %d %d 1 1 90 1\n", pos_x, pos_y + 100, GREEN, font_size);
-			break;
-		case T_SIDE:
-			printf("T %d %d %d %d 1 1 90 7\n", pos_x, pos_y - 100, GREEN, font_size);
-			break;
-		}
+		printf("T %d %d %d %d 1 1 %d %d 1\n", pos_x + xdir * 100, pos_y + ydir * 100, GREEN, font_size, angle[dir] * 90, (1 - align[dir]) * 6 + 1);
 		printf("pinlabel=%s\n", name);
 	}
 
@@ -403,9 +352,9 @@ int make_box(int fldcnt, char *pFields[])
 		 *  with this tool */
 		strcpy(footprint, pFields[6]);
 		pincount = atoi(pFields[7]);
-		printf("T %d %d %d %d 0 0 0 0\n", pos_x, pos_y + BoxHeight + 1100, YELLOW, font_size);
+		printf("T %d %d %d %d 0 0 0 0 1\n", pos_x, pos_y + BoxHeight + 1100, YELLOW, font_size);
 		printf("footprint=%s\n", footprint);
-		printf("T %d %d %d %d 0 0 0 0\n", pos_x, pos_y + BoxHeight + 1300, YELLOW, font_size);
+		printf("T %d %d %d %d 0 0 0 0 1\n", pos_x, pos_y + BoxHeight + 1300, YELLOW, font_size);
 		printf("pins=%d\n", pincount);
 	} else {
 		strcpy(class, "IC");
@@ -415,11 +364,11 @@ int make_box(int fldcnt, char *pFields[])
 	/* new file format: x y width height color width 
 	   end type length space filling fillwidth angle1 pitch1 angle2 pitch2 */
 	printf("B %d %d %d %d %d 0 0 0 -1 -1 0 -1 -1 -1 -1 -1\n", pos_x, pos_y, BoxWidth, BoxHeight, GREEN);
-	printf("T %d %d %d %d 0 0 0 0\n", pos_x, pos_y + BoxHeight + 700, YELLOW, font_size);
+	printf("T %d %d %d %d 0 0 0 0 1\n", pos_x, pos_y + BoxHeight + 700, YELLOW, font_size);
 	printf("device=%s\n", device);
-	printf("T %d %d %d %d 0 0 0 0\n", pos_x, pos_y + BoxHeight + 900, YELLOW, font_size);
+	printf("T %d %d %d %d 0 0 0 0 1\n", pos_x, pos_y + BoxHeight + 900, YELLOW, font_size);
 	printf("class=%s\n", class);
-	printf("T %d %d %d %d 1 1 0 0\n", pos_x, pos_y + BoxHeight + 500, RED, font_size);
+	printf("T %d %d %d %d 1 1 0 0 1\n", pos_x, pos_y + BoxHeight + 500, RED, font_size);
 	printf("refdes=%s\n", uref);
 
 #if 0
@@ -464,7 +413,7 @@ int make_box(int fldcnt, char *pFields[])
 			pos_x = pin_0_x;
 			pos_y = pin_0_y + 50;
 		}
-		printf("T %d %d %d %d 1 0 0 0\n", pos_x, pos_y, GREEN, font_size);
+		printf("T %d %d %d %d 1 0 0 0 1\n", pos_x, pos_y, GREEN, font_size);
 		printf("%s\n", name);
 	}
 	return 0;
