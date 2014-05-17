@@ -463,6 +463,11 @@ make_pin (int fldcnt, char *pFields[])
   static int oldside;
   static int oldshape;
 
+  if ((pin_counter == 0) && (fldcnt < 5)) {
+    fprintf (stderr,"\nError, not enough parameters for first pin:%i instead of 5 !\n",fldcnt);
+    fprintf (stderr,"\nPlease fix the input file then try again.\n\n");
+    return -1;
+  }
   strcpy (pin_name, pFields[0]);
   if (pFields[1]) {
     strcpy (pin, pFields[1]);   /* get pin number */
