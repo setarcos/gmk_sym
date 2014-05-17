@@ -21,6 +21,9 @@ composed of comma separated lines.
 \-d
 Turn on debug output
 .TP
+\-c
+Position pins counter-clockwise
+.TP
 \-h, \-?
 Display usage information
 
@@ -65,7 +68,7 @@ All other valid lines describes the symbol's pins:
 6th value: (optional) pin type attribute: in, out, io, oc, oe,
 pas, tp, tri, clk, pwr
 .RE
-
+Except for the first pin's definition, all other pins can have only the first field present.  Other parameters can be derived from the former pin definition.  The pin number and pin location will keep counting, other fields will simply copy the former value.
 .SH AUTHOR
 Jerry O'Keefe <jerryok@pacbell.net>
 
